@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat
 
 object _03_NanInterpolationVisualization {
   def main(args: Array[String]): Unit = {
+    System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
     val spark = SparkSession.builder()
       .appName("InterpolationVisualization")
       .master("local[*]")

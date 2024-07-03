@@ -4,6 +4,7 @@ import org.apache.spark.sql.expressions.Window
 
 object _02_FindInterruptions {
   def main(args: Array[String]): Unit = {
+    System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
     val spark = SparkSession.builder()
       .appName("FindInterruptions")
       .master("local[*]")

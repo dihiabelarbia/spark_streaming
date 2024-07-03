@@ -4,6 +4,7 @@ import org.apache.spark.sql.functions._
 
 object _06_StationarityTransformation {
   def main(args: Array[String]): Unit = {
+    System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
     val spark = SparkSession.builder()
       .appName("StationarityTransformation")
       .master("local[*]")

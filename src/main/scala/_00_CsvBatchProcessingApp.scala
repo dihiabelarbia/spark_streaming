@@ -2,6 +2,7 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
 
 object _00_CsvBatchProcessingApp {
   def main(args: Array[String]): Unit = {
+    System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
     // Initialisation du SparkSession
     val spark: SparkSession = SparkSession.builder()
       .appName("CsvBatchProcessingApp")

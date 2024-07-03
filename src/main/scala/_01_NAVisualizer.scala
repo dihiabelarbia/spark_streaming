@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat
 
 object _01_NAVisualizer {
   def main(args: Array[String]): Unit = {
+    System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
     // Initialiser SparkSession
     val spark = SparkSession.builder()
       .appName("RainDetection")

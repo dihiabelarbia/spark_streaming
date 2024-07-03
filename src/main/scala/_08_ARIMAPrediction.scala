@@ -4,13 +4,16 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.knowm.xchart.style.markers.SeriesMarkers
 import org.knowm.xchart.{BitmapEncoder, XYChartBuilder}
-
-object _08_ARIMAPrediction {
+object ARIMAPrediction {
   def main(args: Array[String]): Unit = {
+    // Configurer le fichier log4j2 personnalisé
+    System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
+
     val spark = SparkSession.builder()
       .appName("ARIMAPrediction")
       .master("local[*]")
       .getOrCreate()
+
 
     import spark.implicits._
 
