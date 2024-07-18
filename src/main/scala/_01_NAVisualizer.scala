@@ -23,6 +23,7 @@ object _01_NAVisualizer {
 
     // Charger les données depuis un fichier CSV
     val filePath2 = "csv/data_part2.csv"
+
     val df2 = spark.read.option("header", "true").option("inferSchema", "true").csv(filePath2)
 
     // Sélectionner les colonnes d'intérêt
