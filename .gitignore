@@ -5,7 +5,7 @@ target/
 checkpoint/
 csv/
 csvInter/
-csvOutPut1day/
+checkpoint/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
