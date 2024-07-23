@@ -1,6 +1,6 @@
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
-object _00_CsvBatchProcessingApp {
+object CsvBatchProcessingApp {
   def main(args: Array[String]): Unit = {
     System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
     // Initialisation du SparkSession
@@ -10,7 +10,7 @@ object _00_CsvBatchProcessingApp {
       .getOrCreate()
 
     // Lire le fichier CSV en DataFrame
-    val inputFilePath = "csv/CIV-00001.csv"
+    val inputFilePath = "csv/test_data_corrected.csv"
     val outputFilePath = "csvOutPut"
 
     val csvDF = spark.read.option("header", "true").csv(inputFilePath)
@@ -23,7 +23,7 @@ object _00_CsvBatchProcessingApp {
     // Définir le schéma basé sur csvDF
     val schema = csvDF.schema
 
-    // Traiter les données par lots de 100 lignes et écrire dans un fichier CSV
+    // Traiter les données par lots et écrire dans un fichier CSV
     for (i <- 0 until numBatches) {
       val start = i * batchSize
       val end = math.min((i + 1) * batchSize, lines.length)
@@ -34,10 +34,10 @@ object _00_CsvBatchProcessingApp {
 
       // Écrire le lot dans un fichier CSV
       val batchOutputPath = s"$outputFilePath/batch_$i.csv"
-      batchDF.write
+      batchDF.coalesce(1).write
         .option("header", "true")
-        .mode(SaveMode.Overwrite)
-          .csv(batchOutputPath)
+        .mode(SaveMode.Append)
+        .csv(batchOutputPath)
 
       // Pause d'une seconde
       Thread.sleep(1000)
