@@ -5,18 +5,18 @@ import org.apache.spark.sql.types._
 import org.knowm.xchart.{SwingWrapper, XYChartBuilder}
 import org.knowm.xchart.style.markers.SeriesMarkers
 
+import java.nio.file.{Files, Paths}
 import scala.collection.mutable.ListBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.ZoneOffset
-import java.nio.file.{Files, Paths}
 
-object StreamingApp {
+object test {
   def main(args: Array[String]): Unit = {
     System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
 
     val spark = SparkSession.builder()
-      .appName("StreamingApp")
+      .appName("StreamingJoinExample")
       .master("local[*]")
       .config("spark.sql.streaming.statefulOperator.checkCorrectness.enabled", "false")
       .config("spark.sql.streaming.checkpointLocation", "checkpoint/") // Ajoutez un point de contrôle
@@ -27,13 +27,6 @@ object StreamingApp {
 
     import spark.implicits._
 
-    // Vérifier périodiquement l'existence du dossier csvOutPut
-    val outputDir = "csvOutPut"
-    while (!Files.exists(Paths.get(outputDir))) {
-      println(s"Dossier $outputDir n'existe pas encore. Attente...")
-      Thread.sleep(1000) // Attendre 1 seconde avant de vérifier à nouveau
-    }
-
     // Define the schema
     val schema = new StructType()
       .add("_c0", TimestampType, true)
@@ -41,12 +34,18 @@ object StreamingApp {
       .add("signal_rad", DoubleType, true)
       .add("pluie", IntegerType, true)
 
-    // Read the data stream with options to handle new files as they arrive
+    // Read the data stream
+    val directoryPath = "csvOutPut"
+
+    while (!Files.exists(Paths.get(directoryPath))) {
+      println(s"Dossier $directoryPath n'existe pas encore. Attente...")
+      Thread.sleep(1000) // Attendre 1 seconde avant de vérifier à nouveau
+    }
+
     val inputDf = spark.readStream
       .schema(schema)
       .option("header", "true")
-      .option("maxFilesPerTrigger", 1) // Lire un fichier à la fois
-      .csv(outputDir)
+      .csv(directoryPath)
       .as("input")
 
     inputDf.printSchema() // Print schema to check if it's correct
