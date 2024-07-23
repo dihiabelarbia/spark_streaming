@@ -3,8 +3,9 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.{OutputMode, Trigger}
 import org.apache.spark.sql.types._
 import org.knowm.xchart.{SwingWrapper, XYChartBuilder}
-import org.knowm.xchart.style.markers.SeriesMarkers
+import org.knowm.xchart.style.markers.SeriesMarkers // Corrected import
 
+import java.nio.file.{Files, Paths}
 import scala.collection.mutable.ListBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -34,7 +35,12 @@ object test {
       .add("pluie", IntegerType, true)
 
     // Read the data stream
-    val directoryPath = "csvOutPut1day/batch_0.csv"
+    val directoryPath = "csvOutPut"
+
+    while (!Files.exists(Paths.get(directoryPath))) {
+      println(s"Dossier $directoryPath n'existe pas encore. Attente...")
+      Thread.sleep(1000) // Attendre 1 seconde avant de vérifier à nouveau
+    }
     val inputDf = spark.readStream
       .schema(schema)
       .option("header", "true")
@@ -80,12 +86,14 @@ object test {
     val chart = new XYChartBuilder().width(800).height(600).title("Real-time Streaming Data").xAxisTitle("Time").yAxisTitle("Values").build()
     chart.addSeries("Signal STD", Array(0.0), Array(0.0)).setMarker(SeriesMarkers.NONE)
     chart.addSeries("Signal RAD", Array(0.0), Array(0.0)).setMarker(SeriesMarkers.NONE)
+    chart.addSeries("Pluie", Array(0.0), Array(0.0)).setMarker(SeriesMarkers.NONE)
     val swingWrapper = new SwingWrapper(chart)
     swingWrapper.displayChart()
 
     val xData = new ListBuffer[Double]()
     val yData1 = new ListBuffer[Double]()
     val yData2 = new ListBuffer[Double]()
+    val yData3 = new ListBuffer[Double]()
 
     // Define date formatter
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -106,16 +114,20 @@ object test {
           xData += dateTime.toEpochSecond(ZoneOffset.UTC).toDouble // Convert timestamp to epoch seconds
           yData1 += Option(row.getAs[Double]("signal_std")).getOrElse(0.0) // Handle null values
           yData2 += Option(row.getAs[Double]("signal_rad")).getOrElse(0.0) // Handle null values
+          yData3 += Option(row.getAs[Int]("pluie")).map(_.toDouble).getOrElse(0.0) // Handle null values and convert to double
+
         }
 
         // Log the coordinates for debugging
         println("xData: " + xData.mkString(", "))
         println("yData1: " + yData1.mkString(", "))
         println("yData2: " + yData2.mkString(", "))
+        println("yData3: " + yData3.mkString(", "))
 
         // Update the chart with new data
         chart.updateXYSeries("Signal STD", xData.toArray, yData1.toArray, null)
         chart.updateXYSeries("Signal RAD", xData.toArray, yData2.toArray, null)
+        chart.updateXYSeries("Pluie", xData.toArray, yData3.toArray, null)
         swingWrapper.repaintChart()
       }
       .outputMode(OutputMode.Append())
