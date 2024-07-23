@@ -3,7 +3,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.{OutputMode, Trigger}
 import org.apache.spark.sql.types._
 import org.knowm.xchart.{SwingWrapper, XYChartBuilder}
-import org.knowm.xchart.style.markers.SeriesMarkers
+import org.knowm.xchart.vhststyle.markers.SeriesMarkers
 
 import java.nio.file.{Files, Paths}
 import scala.collection.mutable.ListBuffer
