@@ -34,7 +34,7 @@ object CsvBatchProcessingApp {
 
       // Écrire le lot dans un fichier CSV
       val batchOutputPath = s"$outputFilePath/batch_$i.csv"
-      batchDF.coalesce(1).write
+      batchDF.write
         .option("header", "true")
         .mode(SaveMode.Append)
         .csv(batchOutputPath)

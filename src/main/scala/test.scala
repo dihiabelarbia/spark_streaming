@@ -9,13 +9,14 @@ import scala.collection.mutable.ListBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.ZoneOffset
+import java.nio.file.{Files, Paths}
 
-object test {
+object StreamingApp {
   def main(args: Array[String]): Unit = {
     System.setProperty("log4j.configurationFile", "src/main/resources/log4j2.properties")
 
     val spark = SparkSession.builder()
-      .appName("StreamingJoinExample")
+      .appName("StreamingApp")
       .master("local[*]")
       .config("spark.sql.streaming.statefulOperator.checkCorrectness.enabled", "false")
       .config("spark.sql.streaming.checkpointLocation", "checkpoint/") // Ajoutez un point de contrôle
@@ -26,6 +27,13 @@ object test {
 
     import spark.implicits._
 
+    // Vérifier périodiquement l'existence du dossier csvOutPut
+    val outputDir = "csvOutPut"
+    while (!Files.exists(Paths.get(outputDir))) {
+      println(s"Dossier $outputDir n'existe pas encore. Attente...")
+      Thread.sleep(1000) // Attendre 1 seconde avant de vérifier à nouveau
+    }
+
     // Define the schema
     val schema = new StructType()
       .add("_c0", TimestampType, true)
@@ -33,12 +41,12 @@ object test {
       .add("signal_rad", DoubleType, true)
       .add("pluie", IntegerType, true)
 
-    // Read the data stream
-    val directoryPath = "csvOutPut1day/batch_0.csv"
+    // Read the data stream with options to handle new files as they arrive
     val inputDf = spark.readStream
       .schema(schema)
       .option("header", "true")
-      .csv(directoryPath)
+      .option("maxFilesPerTrigger", 1) // Lire un fichier à la fois
+      .csv(outputDir)
       .as("input")
 
     inputDf.printSchema() // Print schema to check if it's correct
